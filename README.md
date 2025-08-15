@@ -34,6 +34,7 @@ Fun.Bot is a Python-based Discord bot designed to bring fun commands, games, and
 - [Privacy Policy](#privacy-policy)
 - [Licensing](#licensing)
 - [Contact](#contact)
+- [13Block.cc](#13blockcc)
 
 ---
 
@@ -115,5 +116,120 @@ If you have any questions about the TOS, Privacy Policy, or the bot itself:
 - **Support Server:** [Invite Link](https://discord.gg/Xbm9XEFfrf)  
 - **Bot Invite:** [Invite Link](https://discord.com/oauth2/authorize?client_id=1405748450125021355&permissions=2151017536&integration_type=0&scope=bot+applications.commands)  
 - **Website:** [Fun.Bot Webpage](https://cosmic4796.github.io/funbot.github.io/)
+
+</details>
+
+<details>
+<summary>💎 <strong>13Block.cc</strong></summary>
+
+**13Block.cc** offers one of the best Roblox "Da Bronx 3" scripts currently available!  
+
+### 💰 Pricing
+- **Lifetime Access:** $10  
+- **Monthly Access:** $7  
+
+### 📌 Table of Contents (13Block.cc)
+- [Player Tab](#player-tab)  
+- [Gun Modifications](#gun-modifications)  
+- [Target System](#target-system)  
+- [Banking Options](#banking-options)  
+- [Teleportation](#teleportation)  
+- [GUI Controls](#gui-controls)  
+- [Autofarms Tab](#autofarms-tab)  
+- [Visuals Tab](#visuals-tab)  
+- [Combat Tab](#combat-tab)  
+- [Car Options Tab](#car-options-tab)  
+- [Settings Tab](#settings-tab)  
+- [Server Management](#server-management)  
+- [Mobile Support](#mobile-support)  
+
+---
+
+### 🧑 Player Tab
+- Player Mods: Infinite Stamina/Hunger/Sleep  
+- Faster Respawn + Respawn Where You Died  
+- Instant Interact + Anti Jump Cooldown  
+- Disable Camera Bobbing/Blood Effects  
+- Full Brightness + No Rent Pay  
+- No Fall Damage + Freecam  
+- 13block.cc NameTag + Anti-Crawl  
+- Chat Spy with Live GUI  
+- Movement Controls: Fly + Speed Control (50-2000), Walk Speed + Enhanced Walk with WASD, Jump Height/Power + Infinite Jump, Noclip + Character State Management  
+
+### 🔫 Gun Modifications
+- Infinite Ammo/Damage + Auto Reload  
+- Fire Modes: Auto/Burst/Shotgun/Single  
+- No Fire Rate/Jam/Recoil + Perfect Accuracy  
+- Instant Reload/Equip + No Walk Speed Reduction  
+- Custom Fire Rate (1-10000 RPM), Damage (1-1000 HP), Range (1-2000 studs)  
+- Custom Accuracy/Recoil Control  
+
+### 🎯 Target System
+- Advanced Player Selection  
+- Goto Player + View Cash/Bank/Inventory  
+- Spectate + Bring Player Continuously  
+- Kill/God/Ragdoll/Down Functions  
+- Auto Kill Selected + Kill All Players  
+- Kill Aura + Auto Kill Nearby Players (Adjustable Range: 1-1000 studs)  
+
+### 🏦 Banking Options
+- Auto Deposit/Withdraw with custom amounts  
+- Auto Cash Drop (1-10000$)  
+- Advanced Money Laundering System  
+
+### 🗺 Teleportation
+- 27+ Locations: Rooftop, Penthouse, Dupesafe, Bank, Studio, Exotic Guns, Construction, etc.  
+- Quick Buy System (15 Items: Bags, Weapons, Food)  
+- Teleport Delay Control (0.1-1 sec)  
+
+### 🖥 GUI Controls
+- Gun Market/ExoticShop/Pawn Shop Toggle  
+- New Gun Seller/ATM/Trunk Storage Access  
+
+### 🔄 Autofarms Tab
+- Auto Dupe System (Configurable Dupe Count, Adjustable Wait Time 1-1.5s)  
+- Infinite Money Generator  
+- Auto Cook & Sell Koolaid  
+- Studio Autofarm (3 Locations)  
+- Construction Farm (Wall Building)  
+- Auto Loot Trash + Auto Sell  
+
+### 👀 Visuals Tab
+- Advanced ESP: Name/Box/Health/Tracer/Chams/Skeleton  
+- Box Styles: Corner/Full/3D  
+- Health Styles: Bar/Text/Both  
+- Custom Colors/Transparency/Thickness  
+- Rainbow Effects + Speed Control  
+- Render Distance: 50-5000 studs  
+- World Environment: Custom Sky/Ambient/Fog/Sun Colors, Time of Day Control (0-24h), Fog Distance (100-50000 studs), Sun Brightness/Size Control  
+- Field of View: Custom FOV (30-120°) + Reset Function  
+
+### ⚔ Combat Tab
+- Hitbox Expander (Size Control 1-200 studs, Target Parts: Head/HumanoidRootPart)  
+- Silent Aim System + Multi-Part Targeting  
+- Hit Chance Control (0-100%), Wall/Health/Distance Checks  
+- FOV Circle Visualization + Customization + Rainbow Effects  
+- Snapline to Target, Aimbot System (Smoothing 1-100%, Prediction 0-200%, Sticky Aim)  
+
+### 🚗 Car Options Tab
+- Car Tuning System (Custom Horsepower 100-10M, Apply Boost Power Toggle)  
+- Auto Steal Nearest Vehicle, Unlock All Vehicle Seats  
+- Break All Glass Effects  
+
+### ⚙ Settings Tab
+- Configuration & Keybind Menu  
+- Notification Position (4 Corners)  
+- Menu Keybind Customization  
+- Unload Script Function  
+
+### 🌐 Server Management
+- Server Hop + Rejoin Current  
+- Join Low Player Count Server  
+
+### 📱 Mobile Support
+- Touch-Friendly UI + WASD Controls  
+- Mobile Toggle Buttons  
+
+**Join the official server for support, updates, and purchase:** [Discord Invite](https://discord.gg/Brs8RzhEqz)
 
 </details>
