@@ -1,0 +1,10 @@
+discord.py==2.3.2
+aiohttp==3.9.1
+python-dotenv==1.0.0
+Pillow==10.1.0
+requests==2.31.0
+asyncio
+datetime
+random2==1.0.1
+wikipedia==1.4.0
+pytz==2023.3
