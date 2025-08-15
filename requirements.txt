@@ -8,3 +8,5 @@ datetime
 random2==1.0.1
 wikipedia==1.4.0
 pytz==2023.3
+qrcode==7.4.2
+validators==0.22.0
