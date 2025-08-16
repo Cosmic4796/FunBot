@@ -42,7 +42,7 @@ FISHING_ROD_USES = 10          # Uses before breaking
 
 # Data Management
 DATA_FILE = "economy_data.json" # Save file location
-DATA_BACKUP_MINUTES = 30       # Auto-save interval
+DATA_BACKUP_MINUTES = 5       # Auto-save interval
 
 # =============================================
 #             GLOBAL VARIABLES
@@ -794,7 +794,7 @@ async def slots(interaction: discord.Interaction, bet: int):
 
 @bot.tree.command(name="scratch", description="🎫 Scratch your lottery tickets")
 async def scratch(interaction: discord.Interaction):
-    global CURRENT_LOTTERY_PRIZE  # Moved to the top of the function
+    global CURRENT_LOTTERY_PRIZE
     
     user_id = interaction.user.id
     
@@ -1059,6 +1059,8 @@ class ShopSelect(discord.ui.Select):
         super().__init__(placeholder="Choose an item to buy...", options=options, min_values=1, max_values=1)
     
     async def callback(self, interaction: discord.Interaction):
+        global CURRENT_LOTTERY_PRIZE
+        
         item_id = self.values[0]
         user_id = interaction.user.id
         current_balance = get_balance(user_id)
@@ -1110,7 +1112,6 @@ class ShopSelect(discord.ui.Select):
                 embed.add_field(name="🏆 JACKPOT!", value=f"You won {CURRENCY}{win_amount:,}!", inline=False)
                 embed.add_field(name="💳 New Balance", value=f"{CURRENCY}{new_balance:,}", inline=True)
                 
-                global CURRENT_LOTTERY_PRIZE
                 CURRENT_LOTTERY_PRIZE = random.randint(LOTTERY_MIN_PRIZE, LOTTERY_START_PRIZE)
                 update_lottery_description()
                 save_data()
@@ -1594,7 +1595,7 @@ async def give_all(interaction: discord.Interaction, amount: int):
 @bot.tree.command(name="set_lottery", description="[Owner] Set the lottery jackpot")
 @is_owner()
 async def set_lottery(interaction: discord.Interaction, amount: int):
-    global CURRENT_LOTTERY_PRIZE  # Added global declaration
+    global CURRENT_LOTTERY_PRIZE
     
     if amount < LOTTERY_MIN_PRIZE:
         embed = create_embed("❌ Too Low", f"Minimum lottery prize is {CURRENCY}{LOTTERY_MIN_PRIZE:,}!", discord.Color.red())
