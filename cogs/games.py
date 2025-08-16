@@ -73,36 +73,216 @@ class Games(commands.Cog):
             "Do the chicken dance"
         ]
 
-    @app_commands.command(name="rps", description="Play Rock Paper Scissors")
-    async def rock_paper_scissors(self, interaction: discord.Interaction, choice: str):
-        choices = ["rock", "paper", "scissors"]
-        if choice.lower() not in choices:
-            await interaction.response.send_message("Please choose rock, paper, or scissors!")
-            return
+    @app_commands.command(name="play", description="Play various games: rps, trivia, riddle, hangman, guess, quiz")
+    async def play_game(self, interaction: discord.Interaction, game: str, choice: str = None):
+    @app_commands.command(name="play", description="Play various games: rps, trivia, riddle, hangman, guess, quiz")
+    async def play_game(self, interaction: discord.Interaction, game: str, choice: str = None):
+        game = game.lower()
         
-        bot_choice = random.choice(choices)
-        user_choice = choice.lower()
-        
-        emojis = {"rock": "🗿", "paper": "📄", "scissors": "✂️"}
-        
-        if user_choice == bot_choice:
-            result = "It's a tie!"
-            color = 0xffff00
-        elif (user_choice == "rock" and bot_choice == "scissors") or \
-             (user_choice == "paper" and bot_choice == "rock") or \
-             (user_choice == "scissors" and bot_choice == "paper"):
-            result = "You win!"
-            color = 0x00ff00
+        if game == "rps" and choice:
+            # Rock Paper Scissors
+            choices = ["rock", "paper", "scissors"]
+            if choice.lower() not in choices:
+                await interaction.response.send_message("Please choose rock, paper, or scissors!")
+                return
+            
+            bot_choice = random.choice(choices)
+            user_choice = choice.lower()
+            
+            emojis = {"rock": "🗿", "paper": "📄", "scissors": "✂️"}
+            
+            if user_choice == bot_choice:
+                result = "It's a tie!"
+                color = 0xffff00
+            elif (user_choice == "rock" and bot_choice == "scissors") or \
+                 (user_choice == "paper" and bot_choice == "rock") or \
+                 (user_choice == "scissors" and bot_choice == "paper"):
+                result = "You win!"
+                color = 0x00ff00
+            else:
+                result = "I win!"
+                color = 0xff0000
+            
+            embed = discord.Embed(title="🎮 Rock Paper Scissors", color=color)
+            embed.add_field(name="You chose", value=f"{emojis[user_choice]} {user_choice.title()}", inline=True)
+            embed.add_field(name="I chose", value=f"{emojis[bot_choice]} {bot_choice.title()}", inline=True)
+            embed.add_field(name="Result", value=result, inline=False)
+            
+            await interaction.response.send_message(embed=embed)
+            
+        elif game == "trivia":
+            # Trivia game
+            question_data = random.choice(self.trivia_questions)
+            
+            embed = discord.Embed(
+                title="🧠 Trivia Time!",
+                description=question_data["question"],
+                color=0x4169e1
+            )
+            
+            options_text = "\n".join([f"{i+1}. {option}" for i, option in enumerate(question_data["options"])])
+            embed.add_field(name="Options", value=options_text, inline=False)
+            embed.set_footer(text="You have 30 seconds to answer! Type the number of your choice.")
+            
+            await interaction.response.send_message(embed=embed)
+            
+            def check(message):
+                return (message.author == interaction.user and 
+                       message.channel == interaction.channel and
+                       message.content.isdigit() and
+                       1 <= int(message.content) <= 4)
+            
+            try:
+                response = await self.bot.wait_for('message', timeout=30.0, check=check)
+                user_answer = question_data["options"][int(response.content) - 1]
+                
+                if user_answer.lower() == question_data["answer"] or question_data["answer"] in user_answer.lower():
+                    result_embed = discord.Embed(
+                        title="✅ Correct!",
+                        description=f"Great job! The answer was **{user_answer}**",
+                        color=0x00ff00
+                    )
+                else:
+                    correct_option = next(opt for opt in question_data["options"] if question_data["answer"] in opt.lower())
+                    result_embed = discord.Embed(
+                        title="❌ Incorrect!",
+                        description=f"The correct answer was **{correct_option}**",
+                        color=0xff0000
+                    )
+                
+                await response.reply(embed=result_embed)
+                
+            except asyncio.TimeoutError:
+                timeout_embed = discord.Embed(
+                    title="⏰ Time's up!",
+                    description="You took too long to answer!",
+                    color=0xff4500
+                )
+                await interaction.followup.send(embed=timeout_embed)
+                
+        elif game == "riddle":
+            # Riddle game
+            riddle_data = random.choice(self.riddles)
+            
+            embed = discord.Embed(
+                title="🤔 Riddle Me This!",
+                description=riddle_data["question"],
+                color=0x9932cc
+            )
+            embed.set_footer(text="You have 60 seconds to answer!")
+            
+            await interaction.response.send_message(embed=embed)
+            
+            def check(message):
+                return (message.author == interaction.user and 
+                       message.channel == interaction.channel)
+            
+            try:
+                response = await self.bot.wait_for('message', timeout=60.0, check=check)
+                
+                if riddle_data["answer"].lower() in response.content.lower():
+                    result_embed = discord.Embed(
+                        title="🎉 Correct!",
+                        description=f"Excellent! The answer was **{riddle_data['answer']}**",
+                        color=0x00ff00
+                    )
+                else:
+                    result_embed = discord.Embed(
+                        title="❌ Not quite!",
+                        description=f"The answer was **{riddle_data['answer']}**\nBetter luck next time!",
+                        color=0xff0000
+                    )
+                
+                await response.reply(embed=result_embed)
+                
+            except asyncio.TimeoutError:
+                timeout_embed = discord.Embed(
+                    title="⏰ Time's up!",
+                    description=f"The answer was **{riddle_data['answer']}**",
+                    color=0xff4500
+                )
+                await interaction.followup.send(embed=timeout_embed)
+                
+        elif game == "guess":
+            # Number guessing game
+            number = random.randint(1, 100)
+            attempts = 0
+            max_attempts = 7
+            
+            embed = discord.Embed(
+                title="🎲 Number Guessing Game",
+                description="I'm thinking of a number between 1 and 100!\nYou have 7 attempts to guess it.",
+                color=0x4169e1
+            )
+            embed.set_footer(text="Type your guess!")
+            
+            await interaction.response.send_message(embed=embed)
+            
+            while attempts < max_attempts:
+                def check(message):
+                    return (message.author == interaction.user and 
+                           message.channel == interaction.channel and
+                           message.content.isdigit())
+                
+                try:
+                    response = await self.bot.wait_for('message', timeout=60.0, check=check)
+                    guess = int(response.content)
+                    attempts += 1
+                    
+                    if guess < 1 or guess > 100:
+                        await response.reply("Please guess a number between 1 and 100!")
+                        attempts -= 1
+                        continue
+                    
+                    if guess == number:
+                        win_embed = discord.Embed(
+                            title="🎉 Congratulations!",
+                            description=f"You guessed it! The number was **{number}**\nIt took you {attempts} attempt(s)!",
+                            color=0x00ff00
+                        )
+                        await response.reply(embed=win_embed)
+                        break
+                    elif guess < number:
+                        hint_embed = discord.Embed(
+                            title="📈 Too Low!",
+                            description=f"Your guess ({guess}) is too low!\nAttempts remaining: {max_attempts - attempts}",
+                            color=0xff4500
+                        )
+                        await response.reply(embed=hint_embed)
+                    else:
+                        hint_embed = discord.Embed(
+                            title="📉 Too High!",
+                            description=f"Your guess ({guess}) is too high!\nAttempts remaining: {max_attempts - attempts}",
+                            color=0xff4500
+                        )
+                        await response.reply(embed=hint_embed)
+                    
+                    if attempts >= max_attempts:
+                        lose_embed = discord.Embed(
+                            title="😔 Game Over!",
+                            description=f"You ran out of attempts! The number was **{number}**",
+                            color=0xff0000
+                        )
+                        await response.reply(embed=lose_embed)
+                        break
+                        
+                except asyncio.TimeoutError:
+                    timeout_embed = discord.Embed(
+                        title="⏰ Game timed out!",
+                        description=f"You took too long! The number was **{number}**",
+                        color=0xff4500
+                    )
+                    await interaction.followup.send(embed=timeout_embed)
+                    break
+                    
         else:
-            result = "I win!"
-            color = 0xff0000
-        
-        embed = discord.Embed(title="🎮 Rock Paper Scissors", color=color)
-        embed.add_field(name="You chose", value=f"{emojis[user_choice]} {user_choice.title()}", inline=True)
-        embed.add_field(name="I chose", value=f"{emojis[bot_choice]} {bot_choice.title()}", inline=True)
-        embed.add_field(name="Result", value=result, inline=False)
-        
-        await interaction.response.send_message(embed=embed)
+            embed = discord.Embed(
+                title="🎮 Available Games",
+                description="Choose from: **rps** (rock paper scissors), **trivia**, **riddle**, **guess** (number guessing)",
+                color=0x4169e1
+            )
+            embed.add_field(name="Usage", value="`/play rps rock` or `/play trivia`", inline=False)
+            await interaction.response.send_message(embed=embed)
 
     @app_commands.command(name="trivia", description="Answer a random trivia question")
     async def trivia(self, interaction: discord.Interaction):
