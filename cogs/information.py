@@ -107,36 +107,226 @@ class Information(commands.Cog):
             )
             await interaction.response.send_message(embed=embed)
 
-    @app_commands.command(name="crypto", description="Get cryptocurrency prices (placeholder)")
-    async def crypto_price(self, interaction: discord.Interaction, symbol: str = "btc"):
-        embed = discord.Embed(
-            title="💰 Cryptocurrency Prices",
-            description=f"To get real crypto prices, you can use:\n• **CoinGecko API** (Free): https://www.coingecko.com/en/api\n• **CoinMarketCap API** (Free tier): https://coinmarketcap.com/api/\n\nAdd the API key to your environment and update this command!",
-            color=0xffd700
-        )
-        embed.add_field(name="Requested", value=symbol.upper(), inline=True)
-        embed.set_footer(text="This is a placeholder - implement with your preferred crypto API")
-        await interaction.response.send_message(embed=embed)
+    @app_commands.command(name="crypto", description="Get cryptocurrency prices")
+    async def crypto_price(self, interaction: discord.Interaction, symbol: str = "bitcoin"):
+        api_key = os.getenv('COINGECKO_API_KEY')
+        
+        try:
+            async with aiohttp.ClientSession() as session:
+                if api_key:
+                    # Use CoinGecko API with key for higher rate limits
+                    headers = {"x-cg-demo-api-key": api_key}
+                    url = f"https://api.coingecko.com/api/v3/simple/price?ids={symbol}&vs_currencies=usd&include_24hr_change=true"
+                else:
+                    # Use free tier without key
+                    headers = {}
+                    url = f"https://api.coingecko.com/api/v3/simple/price?ids={symbol}&vs_currencies=usd&include_24hr_change=true"
+                
+                async with session.get(url, headers=headers) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        
+                        if symbol in data:
+                            price = data[symbol]['usd']
+                            change = data[symbol].get('usd_24h_change', 0)
+                            
+                            color = 0x00ff00 if change >= 0 else 0xff0000
+                            change_emoji = "📈" if change >= 0 else "📉"
+                            
+                            embed = discord.Embed(
+                                title=f"💰 {symbol.title()} Price",
+                                color=color
+                            )
+                            embed.add_field(name="💵 Price", value=f"${price:,.2f}", inline=True)
+                            embed.add_field(name=f"{change_emoji} 24h Change", value=f"{change:.2f}%", inline=True)
+                            embed.set_footer(text="Data from CoinGecko API")
+                            
+                            await interaction.response.send_message(embed=embed)
+                        else:
+                            await interaction.response.send_message(f"❌ Cryptocurrency '{symbol}' not found! Try: bitcoin, ethereum, dogecoin")
+                    else:
+                        raise Exception(f"API returned status {response.status}")
+                        
+        except Exception as e:
+            await interaction.response.send_message(f"❌ Error fetching crypto price: {str(e)}")
 
-    @app_commands.command(name="news", description="Get latest news (placeholder)")
-    async def latest_news(self, interaction: discord.Interaction):
-        embed = discord.Embed(
-            title="📰 Latest News",
-            description="To get real news, you can use:\n• **NewsAPI** (Free tier): https://newsapi.org/\n• **Guardian API** (Free): https://open-platform.theguardian.com/\n\nAdd your API key and update this command!",
-            color=0x4169e1
-        )
-        embed.set_footer(text="This is a placeholder - implement with your preferred news API")
-        await interaction.response.send_message(embed=embed)
+    @app_commands.command(name="news", description="Get latest news headlines")
+    async def latest_news(self, interaction: discord.Interaction, category: str = "general"):
+        api_key = os.getenv('NEWS_API_KEY')
+        if not api_key:
+            await interaction.response.send_message("❌ News API key not configured!")
+            return
+        
+        valid_categories = ["general", "business", "entertainment", "health", "science", "sports", "technology"]
+        if category.lower() not in valid_categories:
+            await interaction.response.send_message(f"❌ Invalid category! Choose from: {', '.join(valid_categories)}")
+            return
+        
+        try:
+            async with aiohttp.ClientSession() as session:
+                url = f"https://newsapi.org/v2/top-headlines?country=us&category={category}&pageSize=5&apiKey={api_key}"
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        articles = data['articles']
+                        
+                        if articles:
+                            embed = discord.Embed(
+                                title=f"📰 Latest {category.title()} News",
+                                color=0x4169e1
+                            )
+                            
+                            for i, article in enumerate(articles[:3], 1):  # Show top 3
+                                title = article['title'][:100] + "..." if len(article['title']) > 100 else article['title']
+                                description = article['description'][:200] + "..." if article['description'] and len(article['description']) > 200 else (article['description'] or "No description")
+                                
+                                embed.add_field(
+                                    name=f"{i}. {title}",
+                                    value=f"{description}\n[Read more]({article['url']})",
+                                    inline=False
+                                )
+                            
+                            embed.set_footer(text="Powered by NewsAPI")
+                            await interaction.response.send_message(embed=embed)
+                        else:
+                            await interaction.response.send_message("❌ No news articles found!")
+                    else:
+                        raise Exception(f"API returned status {response.status}")
+                        
+        except Exception as e:
+            await interaction.response.send_message(f"❌ Error fetching news: {str(e)}")
 
-    @app_commands.command(name="urban", description="Urban dictionary lookup (placeholder)")
+    @app_commands.command(name="stock", description="Get stock information")
+    async def stock_info(self, interaction: discord.Interaction, symbol: str):
+        api_key = os.getenv('ALPHA_VANTAGE_API_KEY')
+        if not api_key:
+            await interaction.response.send_message("❌ Alpha Vantage API key not configured!")
+            return
+        
+        try:
+            async with aiohttp.ClientSession() as session:
+                url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol.upper()}&apikey={api_key}"
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        
+                        if "Global Quote" in data and data["Global Quote"]:
+                            quote = data["Global Quote"]
+                            
+                            price = float(quote["05. price"])
+                            change = float(quote["09. change"])
+                            change_percent = quote["10. change percent"].replace("%", "")
+                            
+                            color = 0x00ff00 if change >= 0 else 0xff0000
+                            change_emoji = "📈" if change >= 0 else "📉"
+                            
+                            embed = discord.Embed(
+                                title=f"📈 {symbol.upper()} Stock Info",
+                                color=color
+                            )
+                            embed.add_field(name="💵 Current Price", value=f"${price:.2f}", inline=True)
+                            embed.add_field(name=f"{change_emoji} Change", value=f"${change:+.2f} ({change_percent}%)", inline=True)
+                            embed.add_field(name="📊 Previous Close", value=f"${float(quote['08. previous close']):.2f}", inline=True)
+                            embed.add_field(name="📈 Day High", value=f"${float(quote['03. high']):.2f}", inline=True)
+                            embed.add_field(name="📉 Day Low", value=f"${float(quote['04. low']):.2f}", inline=True)
+                            embed.add_field(name="📅 Last Updated", value=quote["07. latest trading day"], inline=True)
+                            
+                            embed.set_footer(text="Data from Alpha Vantage")
+                            await interaction.response.send_message(embed=embed)
+                        else:
+                            await interaction.response.send_message(f"❌ Stock symbol '{symbol.upper()}' not found!")
+                    else:
+                        raise Exception(f"API returned status {response.status}")
+                        
+        except Exception as e:
+            await interaction.response.send_message(f"❌ Error fetching stock data: {str(e)}")
+
+    @app_commands.command(name="movie", description="Get movie information")
+    async def movie_info(self, interaction: discord.Interaction, title: str):
+        api_key = os.getenv('OMDB_API_KEY')
+        if not api_key:
+            await interaction.response.send_message("❌ OMDb API key not configured!")
+            return
+        
+        try:
+            async with aiohttp.ClientSession() as session:
+                url = f"http://www.omdbapi.com/?t={title}&apikey={api_key}"
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        
+                        if data.get("Response") == "True":
+                            embed = discord.Embed(
+                                title=f"🎬 {data['Title']} ({data['Year']})",
+                                description=data.get('Plot', 'No plot available'),
+                                color=0xff6b6b
+                            )
+                            
+                            if data.get('Poster') != 'N/A':
+                                embed.set_thumbnail(url=data['Poster'])
+                            
+                            embed.add_field(name="⭐ IMDb Rating", value=data.get('imdbRating', 'N/A'), inline=True)
+                            embed.add_field(name="🎭 Genre", value=data.get('Genre', 'N/A'), inline=True)
+                            embed.add_field(name="🎬 Director", value=data.get('Director', 'N/A'), inline=True)
+                            embed.add_field(name="🎭 Actors", value=data.get('Actors', 'N/A')[:100] + "..." if len(data.get('Actors', '')) > 100 else data.get('Actors', 'N/A'), inline=False)
+                            embed.add_field(name="📅 Released", value=data.get('Released', 'N/A'), inline=True)
+                            embed.add_field(name="⏱️ Runtime", value=data.get('Runtime', 'N/A'), inline=True)
+                            embed.add_field(name="🏆 Awards", value=data.get('Awards', 'N/A'), inline=True)
+                            
+                            embed.set_footer(text="Data from OMDb API")
+                            await interaction.response.send_message(embed=embed)
+                        else:
+                            await interaction.response.send_message(f"❌ Movie '{title}' not found!")
+                    else:
+                        raise Exception(f"API returned status {response.status}")
+                        
+        except Exception as e:
+            await interaction.response.send_message(f"❌ Error fetching movie data: {str(e)}")
+
+    @app_commands.command(name="urban", description="Urban dictionary lookup")
     async def urban_dictionary(self, interaction: discord.Interaction, term: str):
-        embed = discord.Embed(
-            title="📖 Urban Dictionary",
-            description=f"Looking up: **{term}**\n\nTo implement this, use:\n• **Urban Dictionary API**: http://api.urbandictionary.com/v0/define?term={term}\n\nNo API key needed - just implement the HTTP request!",
-            color=0xff69b4
-        )
-        embed.set_footer(text="This is a placeholder - free API available")
-        await interaction.response.send_message(embed=embed)
+        try:
+            async with aiohttp.ClientSession() as session:
+                url = f"http://api.urbandictionary.com/v0/define?term={term}"
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        
+                        if data['list']:
+                            definition = data['list'][0]  # Get top definition
+                            
+                            # Clean up the definition (remove brackets)
+                            def_text = definition['definition'].replace('[', '').replace(']', '')
+                            example_text = definition.get('example', '').replace('[', '').replace(']', '')
+                            
+                            # Truncate if too long
+                            if len(def_text) > 1000:
+                                def_text = def_text[:1000] + "..."
+                            if len(example_text) > 500:
+                                example_text = example_text[:500] + "..."
+                            
+                            embed = discord.Embed(
+                                title=f"📖 Urban Dictionary: {term}",
+                                description=def_text,
+                                color=0xff69b4
+                            )
+                            
+                            if example_text:
+                                embed.add_field(name="💡 Example", value=f"*{example_text}*", inline=False)
+                            
+                            embed.add_field(name="👍 Thumbs Up", value=definition['thumbs_up'], inline=True)
+                            embed.add_field(name="👎 Thumbs Down", value=definition['thumbs_down'], inline=True)
+                            embed.add_field(name="📅 Date", value=definition['written_on'][:10], inline=True)
+                            
+                            embed.set_footer(text="Urban Dictionary • Content may be inappropriate")
+                            await interaction.response.send_message(embed=embed)
+                        else:
+                            await interaction.response.send_message(f"❌ No definition found for '{term}'")
+                    else:
+                        raise Exception(f"API returned status {response.status}")
+                        
+        except Exception as e:
+            await interaction.response.send_message(f"❌ Error looking up term: {str(e)}")
 
     @app_commands.command(name="github", description="Search GitHub repositories")
     async def github_search(self, interaction: discord.Interaction, query: str):
@@ -169,35 +359,80 @@ class Information(commands.Cog):
         except Exception as e:
             await interaction.response.send_message(f"❌ Error searching GitHub: {str(e)}")
 
-    @app_commands.command(name="stock", description="Stock information (placeholder)")
+    @app_commands.command(name="stock", description="Get stock information")
     async def stock_info(self, interaction: discord.Interaction, symbol: str):
-        embed = discord.Embed(
-            title="📈 Stock Information",
-            description=f"Looking up: **{symbol.upper()}**\n\nTo get real stock data, use:\n• **Alpha Vantage** (Free): https://www.alphavantage.co/\n• **IEX Cloud** (Free tier): https://iexcloud.io/\n• **Yahoo Finance API** (Unofficial but free)\n\nAdd your API key and implement!",
-            color=0x00ff00
-        )
-        embed.set_footer(text="This is a placeholder - multiple free APIs available")
-        await interaction.response.send_message(embed=embed)
+        api_key = os.getenv('ALPHA_VANTAGE_API_KEY')
+        if not api_key:
+            await interaction.response.send_message("❌ Alpha Vantage API key not configured!")
+            return
+        
+        try:
+            async with aiohttp.ClientSession() as session:
+                url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol.upper()}&apikey={api_key}"
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        
+                        if "Global Quote" in data and data["Global Quote"]:
+                            quote = data["Global Quote"]
+                            
+                            price = float(quote["05. price"])
+                            change = float(quote["09. change"])
+                            change_percent = quote["10. change percent"].replace("%", "")
+                            
+                            color = 0x00ff00 if change >= 0 else 0xff0000
+                            change_emoji = "📈" if change >= 0 else "📉"
+                            
+                            embed = discord.Embed(
+                                title=f"📈 {symbol.upper()} Stock Info",
+                                color=color
+                            )
+                            embed.add_field(name="💵 Current Price", value=f"${price:.2f}", inline=True)
+                            embed.add_field(name=f"{change_emoji} Change", value=f"${change:+.2f} ({change_percent}%)", inline=True)
+                            embed.add_field(name="📊 Previous Close", value=f"${float(quote['08. previous close']):.2f}", inline=True)
+                            embed.add_field(name="📈 Day High", value=f"${float(quote['03. high']):.2f}", inline=True)
+                            embed.add_field(name="📉 Day Low", value=f"${float(quote['04. low']):.2f}", inline=True)
+                            embed.add_field(name="📅 Last Updated", value=quote["07. latest trading day"], inline=True)
+                            
+                            embed.set_footer(text="Data from Alpha Vantage")
+                            await interaction.response.send_message(embed=embed)
+                        else:
+                            await interaction.response.send_message(f"❌ Stock symbol '{symbol.upper()}' not found!")
+                    else:
+                        raise Exception(f"API returned status {response.status}")
+                        
+        except Exception as e:
+            await interaction.response.send_message(f"❌ Error fetching stock data: {str(e)}")
 
-    @app_commands.command(name="movie", description="Movie information (placeholder)")
-    async def movie_info(self, interaction: discord.Interaction, title: str):
-        embed = discord.Embed(
-            title="🎬 Movie Information",
-            description=f"Searching for: **{title}**\n\nTo get real movie data, use:\n• **OMDb API** (Free): http://www.omdbapi.com/\n• **The Movie DB** (Free): https://www.themoviedb.org/documentation/api\n\nBoth require free API keys!",
-            color=0xff6b6b
-        )
-        embed.set_footer(text="This is a placeholder - free APIs available")
-        await interaction.response.send_message(embed=embed)
-
-    @app_commands.command(name="lyrics", description="Song lyrics (placeholder)")
+    @app_commands.command(name="lyrics", description="Get song lyrics using lyrics.ovh API")
     async def song_lyrics(self, interaction: discord.Interaction, artist: str, song: str):
-        embed = discord.Embed(
-            title="🎵 Song Lyrics",
-            description=f"Searching for: **{song}** by **{artist}**\n\nTo get real lyrics, use:\n• **Lyrics.ovh API** (Free): https://lyricsovh.docs.apiary.io/\n• **Musixmatch API** (Free tier): https://developer.musixmatch.com/\n\nNo API key needed for lyrics.ovh!",
-            color=0x9932cc
-        )
-        embed.set_footer(text="This is a placeholder - free APIs available")
-        await interaction.response.send_message(embed=embed)
+        try:
+            async with aiohttp.ClientSession() as session:
+                url = f"https://api.lyrics.ovh/v1/{artist}/{song}"
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        lyrics = data.get('lyrics', '')
+                        
+                        if lyrics:
+                            # Truncate lyrics if too long for Discord
+                            if len(lyrics) > 2000:
+                                lyrics = lyrics[:1997] + "..."
+                            
+                            embed = discord.Embed(
+                                title=f"🎵 {song} by {artist}",
+                                description=f"```{lyrics}```",
+                                color=0x9932cc
+                            )
+                            embed.set_footer(text="Lyrics from lyrics.ovh")
+                            await interaction.response.send_message(embed=embed)
+                        else:
+                            await interaction.response.send_message("❌ No lyrics found!")
+                    else:
+                        await interaction.response.send_message(f"❌ Lyrics not found for '{song}' by '{artist}'")
+                        
+        except Exception as e:
+            await interaction.response.send_message(f"❌ Error fetching lyrics: {str(e)}")
 
     @app_commands.command(name="define", description="Define a word using Free Dictionary API")
     async def define_word(self, interaction: discord.Interaction, word: str):
