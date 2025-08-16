@@ -32,8 +32,11 @@ async def load_cogs():
         print("Cogs directory not found!")
         return
     
+    # Skip certain cogs to avoid command limit
+    skip_cogs = ['information.py', '__init__.py']
+    
     for filename in cogs_dir.glob('*.py'):
-        if filename.name == '__init__.py':
+        if filename.name in skip_cogs:
             continue
         
         cog_name = f'cogs.{filename.stem}'
