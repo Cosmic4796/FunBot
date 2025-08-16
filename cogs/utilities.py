@@ -113,7 +113,85 @@ class Utilities(commands.Cog):
 
     @app_commands.command(name="weather", description="Get weather information for a city")
     async def weather(self, interaction: discord.Interaction, city: str):
-        await interaction.response.send_message("⚠️ Weather command requires an API key from OpenWeatherMap. Please set up the API key in your environment variables as `WEATHER_API_KEY` to use this feature.")
+        api_key = os.getenv('WEATHER_API_KEY')
+        if not api_key:
+            await interaction.response.send_message("❌ Weather API key not configured!")
+            return
+        
+        try:
+            async with aiohttp.ClientSession() as session:
+                url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        
+                        temp = data['main']['temp']
+                        feels_like = data['main']['feels_like']
+                        humidity = data['main']['humidity']
+                        description = data['weather'][0]['description'].title()
+                        
+                        embed = discord.Embed(
+                            title=f"🌤️ Weather in {city}",
+                            description=f"**{description}**",
+                            color=0x87ceeb
+                        )
+                        embed.add_field(name="🌡️ Temperature", value=f"{temp}°C", inline=True)
+                        embed.add_field(name="🤔 Feels Like", value=f"{feels_like}°C", inline=True)
+                        embed.add_field(name="💧 Humidity", value=f"{humidity}%", inline=True)
+                        
+                        await interaction.response.send_message(embed=embed)
+                    else:
+                        await interaction.response.send_message(f"❌ City '{city}' not found!")
+        except Exception as e:
+            await interaction.response.send_message(f"❌ Error fetching weather: {str(e)}")
+
+    @app_commands.command(name="facts", description="Get random facts, quotes, or advice")
+    async def get_facts(self, interaction: discord.Interaction, type: str = "fact"):
+        type = type.lower()
+        
+        try:
+            async with aiohttp.ClientSession() as session:
+                if type == "fact":
+                    url = "http://numbersapi.com/random"
+                    async with session.get(url) as response:
+                        if response.status == 200:
+                            fact = await response.text()
+                            embed = discord.Embed(
+                                title="🧠 Random Fact",
+                                description=fact,
+                                color=0x4169e1
+                            )
+                elif type == "quote":
+                    url = "https://api.quotable.io/random"
+                    async with session.get(url) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            embed = discord.Embed(
+                                title="💭 Random Quote",
+                                description=f"*\"{data['content']}\"*\n\n— {data['author']}",
+                                color=0x9932cc
+                            )
+                elif type == "advice":
+                    url = "https://api.adviceslip.com/advice"
+                    async with session.get(url) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            embed = discord.Embed(
+                                title="💡 Random Advice",
+                                description=data['slip']['advice'],
+                                color=0xffd700
+                            )
+                else:
+                    embed = discord.Embed(
+                        title="❌ Invalid Type",
+                        description="Choose from: **fact**, **quote**, **advice**",
+                        color=0xff4500
+                    )
+                
+                await interaction.response.send_message(embed=embed)
+                
+        except Exception as e:
+            await interaction.response.send_message(f"❌ Error fetching {type}: {str(e)}")
 
     @app_commands.command(name="time", description="Get current time in a timezone")
     async def current_time(self, interaction: discord.Interaction, timezone: str = "UTC"):
