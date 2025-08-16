@@ -363,14 +363,64 @@ class Utilities(commands.Cog):
         
         await interaction.response.send_message(embed=embed)
 
-    @app_commands.command(name="upper", description="Convert text to uppercase")
-    async def to_uppercase(self, interaction: discord.Interaction, text: str):
-        embed = discord.Embed(
-            title="🔤 Text Converter",
-            color=0x4169e1
-        )
-        embed.add_field(name="Original", value=text, inline=False)
-        embed.add_field(name="Uppercase", value=text.upper(), inline=False)
+    @app_commands.command(name="text", description="Text manipulation: upper, lower, title, count, reverse, binary, morse")
+    async def text_tools(self, interaction: discord.Interaction, action: str, text: str):
+        action = action.lower()
+        
+        if action == "upper":
+            result = text.upper()
+            title = "🔤 Uppercase"
+        elif action == "lower":
+            result = text.lower()
+            title = "🔤 Lowercase"
+        elif action == "title":
+            result = text.title()
+            title = "🔤 Title Case"
+        elif action == "reverse":
+            result = text[::-1]
+            title = "🔄 Reversed"
+        elif action == "count":
+            char_count = len(text)
+            word_count = len(text.split())
+            embed = discord.Embed(
+                title="📊 Text Statistics",
+                color=0x9932cc
+            )
+            embed.add_field(name="Characters", value=char_count, inline=True)
+            embed.add_field(name="Words", value=word_count, inline=True)
+            embed.add_field(name="Chars (no spaces)", value=len(text.replace(' ', '')), inline=True)
+            await interaction.response.send_message(embed=embed)
+            return
+        elif action == "binary":
+            if len(text) > 50:
+                await interaction.response.send_message("❌ Text too long! Please keep it under 50 characters.")
+                return
+            result = ' '.join(format(ord(char), '08b') for char in text)
+            title = "🤖 Binary"
+        elif action == "morse":
+            morse_dict = {
+                'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
+                'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
+                'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
+                'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+                'Y': '-.--', 'Z': '--..', '1': '.----', '2': '..---', '3': '...--',
+                '4': '....-', '5': '.....', '6': '-....', '7': '--...', '8': '---..',
+                '9': '----.', '0': '-----', ' ': '/'
+            }
+            result = ' '.join(morse_dict.get(char.upper(), char) for char in text)
+            title = "📡 Morse Code"
+        else:
+            embed = discord.Embed(
+                title="❌ Invalid Action",
+                description="Available actions: **upper**, **lower**, **title**, **count**, **reverse**, **binary**, **morse**",
+                color=0xff4500
+            )
+            await interaction.response.send_message(embed=embed)
+            return
+        
+        embed = discord.Embed(title=title, color=0x4169e1)
+        embed.add_field(name="Original", value=f"```{text}```", inline=False)
+        embed.add_field(name="Result", value=f"```{result}```", inline=False)
         
         await interaction.response.send_message(embed=embed)
 
