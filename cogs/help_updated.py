@@ -32,18 +32,16 @@ class Help(commands.Cog):
             "`/rate <thing>` - Rate something 1-10"
         ]
         
-        # Games (Consolidated into /play)
+        # Games (Some consolidated, some separate)
         game_commands = [
-            "`/play rps <choice>` - Rock Paper Scissors",
-            "`/play trivia` - Random trivia question",
-            "`/play riddle` - Get a random riddle",
-            "`/play guess` - Number guessing game",
+            "`/play <game> [choice]` - Play games: rps, trivia, riddle, guess",
             "`/wouldyourather` - Would you rather questions",
             "`/truthordare <choice>` - Truth or dare",
-            "`/hangman` - Play hangman (separate command)"
+            "`/hangman` - Play hangman",
+            "`/quiz` - General knowledge quiz"
         ]
         
-        # Utility Commands (Consolidated)
+        # Utility Commands (Some consolidated)
         utility_commands = [
             "`/serverinfo` - Get server information",
             "`/userinfo [user]` - Get user information",
@@ -51,33 +49,41 @@ class Help(commands.Cog):
             "`/ping` - Check bot latency",
             "`/weather <city>` - Get weather (needs API key)",
             "`/time [timezone]` - Current time in timezone",
-            "`/facts [type]` - Get facts/quotes/advice",
             "`/wiki <query>` - Search Wikipedia",
             "`/calc <expression>` - Simple calculator",
             "`/password [length]` - Generate secure password"
         ]
         
-        # Text Tools (Consolidated)
+        # Text Tools (Consolidated into /text)
         text_commands = [
-            "`/upper <text>` - Convert to uppercase",
-            "`/lower <text>` - Convert to lowercase", 
-            "`/title <text>` - Convert to title case",
-            "`/count <text>` - Count characters/words",
+            "`/text <action> <text>` - Text tools: upper, lower, title, count, reverse, binary, morse",
             "`/base64encode <text>` - Encode to base64",
             "`/base64decode <text>` - Decode from base64",
             "`/hash <text> [algorithm]` - Generate hash",
-            "`/binary <text>` - Convert to binary",
-            "`/morse <text>` - Convert to morse code",
             "`/pig_latin <text>` - Convert to pig latin"
         ]
         
-        # Images (Consolidated)
+        # Images (Consolidated /animal)
         image_commands = [
             "`/animal <type>` - Random animal images (cat/dog/fox)",
             "`/meme_template` - Get meme templates",
             "`/inspire` - Inspirational quotes",
             "`/color <hex>` - Show color information",
             "`/meme` - Random meme ideas"
+        ]
+        
+        # Information Commands (New category!)
+        info_commands = [
+            "`/fact` - Random facts (NumbersAPI)",
+            "`/quote` - Inspirational quotes (Quotable API)", 
+            "`/advice` - Random advice (Advice Slip API)",
+            "`/define <word>` - Define words (Free Dictionary API)",
+            "`/github <query>` - Search GitHub repos",
+            "`/crypto <symbol>` - Crypto prices (placeholder)",
+            "`/stock <symbol>` - Stock info (placeholder)",
+            "`/news` - Latest news (placeholder)",
+            "`/movie <title>` - Movie info (placeholder)",
+            "`/urban <term>` - Urban dictionary (placeholder)"
         ]
         
         # Economy Commands
@@ -125,17 +131,18 @@ class Help(commands.Cog):
         embed.add_field(name="🔧 Utilities", value="\n".join(utility_commands), inline=False)
         embed.add_field(name="📝 Text Tools", value="\n".join(text_commands), inline=False)
         embed.add_field(name="🖼️ Images", value="\n".join(image_commands), inline=False)
+        embed.add_field(name="📚 Information", value="\n".join(info_commands), inline=False)
         embed.add_field(name="💰 Economy", value="\n".join(economy_commands), inline=False)
         embed.add_field(name="❤️ Social", value="\n".join(social_commands), inline=False)
         embed.add_field(name="🏰 Server", value="\n".join(server_commands), inline=False)
         
         embed.add_field(
-            name="🔑 API Setup Required",
-            value="Some commands need free API keys:\n• Weather: OpenWeatherMap\n• All other APIs are free and work automatically!",
+            name="🔑 Free APIs Used",
+            value="✅ **Working APIs (No key needed):**\n• Animal images, Jokes, Facts, Quotes, Advice, Dictionary, GitHub\n\n⚠️ **Need free API keys:**\n• Weather (OpenWeatherMap)\n\n💡 **Placeholder commands:**\n• Crypto, Stock, News, Movie (links to free APIs provided)",
             inline=False
         )
         
-        embed.set_footer(text="Total: 80+ Commands (Optimized) • Many commands consolidated for efficiency")
+        embed.set_footer(text="Total: 90+ Commands • Smart consolidation • Many free APIs working!")
         embed.set_thumbnail(url=self.bot.user.avatar.url)
         
         await interaction.response.send_message(embed=embed)
