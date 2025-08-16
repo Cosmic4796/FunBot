@@ -794,6 +794,8 @@ async def slots(interaction: discord.Interaction, bet: int):
 
 @bot.tree.command(name="scratch", description="🎫 Scratch your lottery tickets")
 async def scratch(interaction: discord.Interaction):
+    global CURRENT_LOTTERY_PRIZE  # Moved to the top of the function
+    
     user_id = interaction.user.id
     
     if not has_item(user_id, "lotteryticket"):
@@ -840,7 +842,6 @@ async def scratch(interaction: discord.Interaction):
         embed.set_thumbnail(url=interaction.user.display_avatar.url)
         
         # Reset lottery prize
-        global CURRENT_LOTTERY_PRIZE
         CURRENT_LOTTERY_PRIZE = random.randint(LOTTERY_MIN_PRIZE, LOTTERY_START_PRIZE)
         update_lottery_description()
         save_data()
@@ -1593,12 +1594,13 @@ async def give_all(interaction: discord.Interaction, amount: int):
 @bot.tree.command(name="set_lottery", description="[Owner] Set the lottery jackpot")
 @is_owner()
 async def set_lottery(interaction: discord.Interaction, amount: int):
+    global CURRENT_LOTTERY_PRIZE  # Added global declaration
+    
     if amount < LOTTERY_MIN_PRIZE:
         embed = create_embed("❌ Too Low", f"Minimum lottery prize is {CURRENCY}{LOTTERY_MIN_PRIZE:,}!", discord.Color.red())
         await interaction.response.send_message(embed=embed, ephemeral=True)
         return
     
-    global CURRENT_LOTTERY_PRIZE
     old_prize = CURRENT_LOTTERY_PRIZE
     CURRENT_LOTTERY_PRIZE = amount
     update_lottery_description()
@@ -1821,4 +1823,3 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"❌ Failed to start bot: {e}")
         exit(1)
-    win_chance
