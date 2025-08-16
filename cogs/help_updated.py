@@ -72,18 +72,19 @@ class Help(commands.Cog):
             "`/meme` - Random meme ideas"
         ]
         
-        # Information Commands (New category!)
+        # Information Commands (Now fully working!)
         info_commands = [
             "`/fact` - Random facts (NumbersAPI)",
             "`/quote` - Inspirational quotes (Quotable API)", 
             "`/advice` - Random advice (Advice Slip API)",
             "`/define <word>` - Define words (Free Dictionary API)",
             "`/github <query>` - Search GitHub repos",
-            "`/crypto <symbol>` - Crypto prices (placeholder)",
-            "`/stock <symbol>` - Stock info (placeholder)",
-            "`/news` - Latest news (placeholder)",
-            "`/movie <title>` - Movie info (placeholder)",
-            "`/urban <term>` - Urban dictionary (placeholder)"
+            "`/crypto [symbol]` - Crypto prices (CoinGecko API) ✅",
+            "`/stock <symbol>` - Stock info (Alpha Vantage API) ✅",
+            "`/news [category]` - Latest news (NewsAPI) ✅",
+            "`/movie <title>` - Movie info (OMDb API) ✅",
+            "`/urban <term>` - Urban dictionary ✅",
+            "`/lyrics <artist> <song>` - Song lyrics ✅"
         ]
         
         # Economy Commands
@@ -137,12 +138,12 @@ class Help(commands.Cog):
         embed.add_field(name="🏰 Server", value="\n".join(server_commands), inline=False)
         
         embed.add_field(
-            name="🔑 Free APIs Used",
-            value="✅ **Working APIs (No key needed):**\n• Animal images, Jokes, Facts, Quotes, Advice, Dictionary, GitHub\n\n⚠️ **Need free API keys:**\n• Weather (OpenWeatherMap)\n\n💡 **Placeholder commands:**\n• Crypto, Stock, News, Movie (links to free APIs provided)",
+            name="🔑 API Status",
+            value="✅ **Fully Working APIs:**\n• Animals, Jokes, Facts, Quotes, Advice, Dictionary, GitHub, Urban Dictionary, Lyrics\n• **Crypto (CoinGecko), Stock (Alpha Vantage), News (NewsAPI), Movies (OMDb)**\n\n⚠️ **Needs API key:**\n• Weather (OpenWeatherMap)\n\n🎉 **All major features working!**",
             inline=False
         )
         
-        embed.set_footer(text="Total: 90+ Commands • Smart consolidation • Many free APIs working!")
+        embed.set_footer(text="Total: 90+ Commands • All APIs integrated and working!")
         embed.set_thumbnail(url=self.bot.user.avatar.url)
         
         await interaction.response.send_message(embed=embed)
