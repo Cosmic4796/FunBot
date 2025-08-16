@@ -64,11 +64,27 @@ class Fun(commands.Cog):
         embed.add_field(name="Answer", value=response, inline=False)
         await interaction.response.send_message(embed=embed)
 
-    @app_commands.command(name="joke", description="Get a random joke")
+    @app_commands.command(name="joke", description="Get random jokes from JokeAPI")
     async def joke(self, interaction: discord.Interaction):
-        joke = random.choice(self.jokes)
-        embed = discord.Embed(title="😂 Random Joke", description=joke, color=0xffff00)
-        await interaction.response.send_message(embed=embed)
+        try:
+            async with aiohttp.ClientSession() as session:
+                # Using JokeAPI - completely free
+                url = "https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,religious,political,racist,sexist,explicit&type=single"
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        joke_text = data.get('joke', random.choice(self.jokes))
+                    else:
+                        joke_text = random.choice(self.jokes)
+            
+            embed = discord.Embed(title="😂 Random Joke", description=joke_text, color=0xffff00)
+            await interaction.response.send_message(embed=embed)
+            
+        except Exception:
+            # Fallback to local jokes
+            joke_text = random.choice(self.jokes)
+            embed = discord.Embed(title="😂 Random Joke", description=joke_text, color=0xffff00)
+            await interaction.response.send_message(embed=embed)
 
     @app_commands.command(name="roast", description="Get roasted (friendly)")
     async def roast(self, interaction: discord.Interaction, user: discord.Member = None):
