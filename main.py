@@ -41,19 +41,10 @@ DATA_FILE = "economy_data.json" # Save file location
 DATA_BACKUP_MINUTES = 30       # Auto-save interval
 
 # =============================================
-#             BOT IMPLEMENTATION
+#             GLOBAL VARIABLES
 # =============================================
+# These are initialized here and modified in functions
 
-import discord
-from discord.ext import commands, tasks
-from discord import app_commands
-import random
-import json
-import os
-from datetime import datetime, timedelta
-import asyncio
-
-# Initialize global variables
 CURRENT_LOTTERY_PRIZE = LOTTERY_START_PRIZE
 economy_data = {}
 server_shops = {}
@@ -93,7 +84,7 @@ BASE_SHOP_ITEMS = {
     "lotteryticket": {
         "name": "Lottery Ticket",
         "base_price": LOTTERY_TICKET_PRICE,
-        "description": f"1 in {LOTTERY_WIN_CHANCE} chance to win!",
+        "description": f"1 in {LOTTERY_WIN_CHANCE} chance to win! Current jackpot: {CURRENCY}{LOTTERY_START_PRIZE:,}",
         "usable": True,
         "max_stock": LOTTERY_MAX_STOCK
     },
@@ -105,6 +96,19 @@ BASE_SHOP_ITEMS = {
         "max_stock": 3
     }
 }
+
+# =============================================
+#             BOT IMPLEMENTATION
+# =============================================
+
+import discord
+from discord.ext import commands, tasks
+from discord import app_commands
+import random
+import json
+import os
+from datetime import datetime, timedelta
+import asyncio
 
 # Initialize bot
 intents = discord.Intents.default()
@@ -680,7 +684,6 @@ async def buy(interaction: discord.Interaction, item: str):
             await announce_lottery_winner(interaction.user, win_amount)
             
             # Reset lottery prize
-            global CURRENT_LOTTERY_PRIZE
             CURRENT_LOTTERY_PRIZE = LOTTERY_MIN_PRIZE
             update_lottery_description()
             save_data()
