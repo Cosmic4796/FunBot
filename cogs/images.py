@@ -9,32 +9,62 @@ class Images(commands.Cog):
         self.bot = bot
 
     async def get_animal_image(self, animal_type: str):
-        """Generic function to get animal images from various APIs"""
-        urls = {
-            "cat": "https://api.thecatapi.com/v1/images/search",
-            "dog": "https://api.thedogapi.com/v1/images/search",
-            "fox": "https://randomfox.ca/floof/",
-            "bird": "https://api.alexflipnote.dev/birb",
-            "panda": "https://some-random-api.ml/animal/panda"
-        }
-        
+        """Get animal images from free APIs"""
         try:
             async with aiohttp.ClientSession() as session:
-                if animal_type == "fox":
-                    async with session.get(urls[animal_type]) as resp:
+                if animal_type == "cat":
+                    async with session.get("https://api.thecatapi.com/v1/images/search") as resp:
                         if resp.status == 200:
                             data = await resp.json()
-                            return data.get("image")
-                elif animal_type in ["cat", "dog"]:
-                    async with session.get(urls[animal_type]) as resp:
+                            return data[0]['url']
+                elif animal_type == "dog":
+                    async with session.get("https://api.thedogapi.com/v1/images/search") as resp:
                         if resp.status == 200:
                             data = await resp.json()
-                            return data[0].get("url")
-                else:
-                    # For other animals, return a placeholder message
-                    return None
-        except Exception as e:
+                            return data[0]['url']
+                elif animal_type == "fox":
+                    async with session.get("https://randomfox.ca/floof/") as resp:
+                        if resp.status == 200:
+                            data = await resp.json()
+                            return data['image']
+                return None
+        except Exception:
             return None
+
+    @app_commands.command(name="animal", description="Get random animal images: cat, dog, fox")
+    async def animal_image(self, interaction: discord.Interaction, animal: str):
+        animal = animal.lower()
+        valid_animals = ["cat", "dog", "fox"]
+        
+        if animal not in valid_animals:
+            embed = discord.Embed(
+                title="🐾 Available Animals",
+                description=f"Choose from: {', '.join(valid_animals)}",
+                color=0xff69b4
+            )
+            await interaction.response.send_message(embed=embed)
+            return
+        
+        image_url = await self.get_animal_image(animal)
+        
+        emojis = {"cat": "🐱", "dog": "🐶", "fox": "🦊"}
+        colors = {"cat": 0xff69b4, "dog": 0x8b4513, "fox": 0xff4500}
+        
+        if image_url:
+            embed = discord.Embed(
+                title=f"{emojis[animal]} Random {animal.title()}",
+                color=colors[animal]
+            )
+            embed.set_image(url=image_url)
+        else:
+            embed = discord.Embed(
+                title=f"{emojis[animal]} {animal.title()} Image",
+                description=f"Here's a cute {animal} for you! 🐾",
+                color=colors[animal]
+            )
+            embed.set_footer(text="API temporarily unavailable")
+        
+        await interaction.response.send_message(embed=embed)
 
     @app_commands.command(name="cat", description="Get a random cat image")
     async def cat_image(self, interaction: discord.Interaction):
